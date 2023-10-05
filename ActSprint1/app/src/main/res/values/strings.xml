@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ActSprint1</string>
+    <string name="escriu_el_teu_missatge">Escriu el teu missatge</string>
+    <string name="enviar">Enviar</string>
 </resources>

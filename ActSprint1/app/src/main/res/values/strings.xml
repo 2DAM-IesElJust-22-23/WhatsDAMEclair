@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">ActSprint1</string>
-    <string name="escriu_el_teu_missatge">Escriu el teu missatge</string>
+    <string name="escriu_el_teu_missatge">Escribe tu mensaje</string>
     <string name="enviar">Enviar</string>
+    <string name="Connect">Conectar</string>
+    <string name="serverAddress">Direccion IP</string>
+    <string name="nickname">Nombre</string>
+    <string name="connection_info_template">Connectado a %1$s como %2$s</string>
 </resources>

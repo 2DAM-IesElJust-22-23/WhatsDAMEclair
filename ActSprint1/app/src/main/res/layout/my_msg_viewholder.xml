@@ -45,9 +45,11 @@
         android:id="@+id/msg_me_timestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@{adapter.horaFormatada}"
+        android:text="10:00"
         android:textColor="#C0C0C0"
         android:textSize="10sp"
         app:layout_constraintBottom_toBottomOf="@+id/msg_cardview"
         app:layout_constraintEnd_toStartOf="@+id/msg_cardview" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

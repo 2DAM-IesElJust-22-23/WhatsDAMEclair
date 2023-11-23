@@ -1,35 +1,82 @@
 package com.example.actsprint1.view
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.actsprint1.databinding.ActivityMainBinding
+import com.example.actsprint1.viewmodel.LoginViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var nickName: String
     private lateinit var serverAddress: String
+    private lateinit var viewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = LoginViewModel()
+
         val buttonConnect = binding.buttonConnect
 
         buttonConnect.setOnClickListener {
-            // Obtener el valor del NickName y la dirección IP del servidor
+            // Obtain the values of NickName and the server IP address
             nickName = binding.nickNameText.text.toString()
             serverAddress = binding.serverAddressText.text.toString()
 
-            // Validar el NickName no esté vacío y la dirección IP sea válida
+            // Validate NickName is not blank and the IP address is valid
             if (isValidNickName(nickName) && isValidIPAddress(serverAddress)) {
-                // Abrir la ventana de mensajes (puedes agregar tu lógica aquí)
-                openMessageWindow()
+                // Show the progress bar and hide the button
+                binding.progressBar.visibility = View.VISIBLE
+                buttonConnect.visibility = View.GONE
+
+                // Call the Login method of the ViewModel
+                lifecycleScope.launch {
+                    try {
+                        // Call the suspend function within the coroutine
+                        viewModel.login(nickName, serverAddress)
+                    } catch (e: Exception) {
+
+                    }
+                }
             } else {
-                // Mostrar un mensaje de error si las validaciones fallan
-                Toast.makeText(this, "Nombre de usuario o dirección IP no válidos", Toast.LENGTH_SHORT).show()
+                // Show an error message if validations fail
+                Toast.makeText(this, "Invalid username or IP address", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Observe the loginStatus LiveData
+        viewModel.loginStatus.observe(this) { loginStatus ->
+            // Check if the JSON contains the "status" key
+            if (loginStatus.has("status")) {
+                // Extract the value of the "status" key
+                val status = loginStatus.getString("status")
+
+                when (status) {
+                    "error" -> {
+                        // Handle the error state
+                        val errorMessage = "ERROR DESCONOCIDO"
+                        if (loginStatus.has("message")){
+                            val errorMessage = loginStatus.getString("message")
+                        }
+
+                        binding.statusTextView.text = errorMessage
+                        binding.statusTextView.visibility = View.VISIBLE
+                        binding.progressBar.visibility = View.GONE
+                        buttonConnect.visibility = View.VISIBLE // Show the button again
+                    }
+                    "ok" -> {
+                        // Proceed to launch the MessagesWindow activity
+                        openMessageWindow()
+                    }
+                }
             }
         }
     }
@@ -75,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, MessagesWindow::class.java)
         intent.putExtra("serverAddress", serverAddress)
         intent.putExtra("nickName", nickName)
+        Log.d("prueba","antes del intent")
         startActivity(intent)
     }
 }

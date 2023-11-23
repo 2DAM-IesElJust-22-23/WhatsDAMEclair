@@ -1,18 +1,18 @@
 package com.example.actsprint1.view
 
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.actsprint1.databinding.ActivityMessagesWindowBinding
 import com.example.actsprint1.model.Message
 import com.example.actsprint1.model.MessageManager
-import com.example.actsprint1.viewmodel.MessageViewHolder.MessageAdapter
+import com.example.actsprint1.viewmodel.MessageAdapter
+import com.example.actsprint1.viewmodel.MessagesViewModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import com.example.actsprint1.databinding.ActivityMessagesWindowBinding
-import com.example.actsprint1.viewmodel.MessagesViewModel
 
 
 class MessagesWindow : AppCompatActivity() {
@@ -58,9 +58,15 @@ class MessagesWindow : AppCompatActivity() {
             missatgesViewModel.MessageLongClickedManager(m, v)
         }
 
+        missatgesViewModel.llistaMissatges.observe(this) { messages ->
+            if (messages.isNotEmpty()) {
+                missatgesViewModel.adaptador.value?.notifyItemInserted(messages.size - 1)
+            }
+        }
+
         // Obtiene los valores de "NICKNAME_KEY" e "IPSERVER" del Intent
-        val serverAddress = intent.getStringExtra("serverAddress") ?: ""
-        val nickName = intent.getStringExtra("nickName") ?: ""
+        val serverAddress = missatgesViewModel.getServer()
+        val nickName = missatgesViewModel.getUserName()
 
         // Actualiza el texto de la información de conexión
         textView.text = "Conectat a $serverAddress com a $nickName"
@@ -73,13 +79,15 @@ class MessagesWindow : AppCompatActivity() {
             val hora = horaActual.format(formatter)
 
             // Crear un nuevo objeto de Mensaje y agregarlo a la lista mensajesEnviados.
-            MessageManager.add(Message(nickName.toString(),messageText.text.toString(),hora))
+            missatgesViewModel.add(Message(nickName,messageText.text.toString(),hora),serverAddress)
+            //MessageManager.add(Message(nickName,messageText.text.toString(),hora))
 
             // Notificar al adaptador de MensajesRecyclerView que se ha insertado un nuevo elemento en la lista.
-            binding.MessagesRecyclerView.adapter?.notifyItemInserted(MessageManager.getLastNum())
+            binding.MessagesRecyclerView.adapter?.notifyItemInserted(missatgesViewModel.repository.getLastMessage())
+
 
             // Desplazar la vista del RecyclerView hacia la última posición de la lista (el mensaje recién agregado).
-            recyclerView.scrollToPosition(MessageManager.getLastNum())
+            recyclerView.scrollToPosition(missatgesViewModel.repository.getLastMessage())
 
             messageText.text.clear()
         }
